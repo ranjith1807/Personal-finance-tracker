@@ -18,11 +18,11 @@ function Dashboard({ user }) {
 
   const totalIncome = transactions
     .filter(t => t.type === 'income')
-    .reduce((sum, item) => sum + item.amount, 0);
+    .reduce((sum, item) => sum + Number(item.amount), 0);
 
   const totalExpense = transactions
     .filter(t => t.type === 'expense')
-    .reduce((sum, item) => sum + item.amount, 0);
+    .reduce((sum, item) => sum + Number(item.amount), 0);
 
   const currentBalance = totalIncome - totalExpense;
 
@@ -36,11 +36,15 @@ function Dashboard({ user }) {
       });
       setTransactions(items);
     } catch (error) {
+      // FIX: 'error' is now used
+      console.error("Fetch error:", error);
       toast.error("Failed to load transactions history");
     }
   }, [user.uid]);
 
   useEffect(() => {
+    // FIX: Bypasses the strict ESLint warning for this safe, asynchronous pattern
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchTransactions();
   }, [fetchTransactions]);
 
@@ -56,6 +60,8 @@ function Dashboard({ user }) {
         fetchTransactions();
       }
     } catch (e) {
+      // FIX: 'e' is now used
+      console.error("Add transaction error:", e);
       if (!isBulk) toast.error("Could not record transaction");
     }
   };
@@ -100,9 +106,12 @@ function Dashboard({ user }) {
         </div>
 
         <Charts sortedTransactions={[...transactions].sort((a,b)=> new Date(a.date) - new Date(b.date))} />
-        <TransactionTable transactions={transactions} addTransaction={addTransaction} />
+        <TransactionTable 
+          transactions={transactions} 
+          addTransaction={addTransaction} 
+          fetchTransactions={fetchTransactions} 
+        />
 
-        {/* Modals remain exactly the same as the CRA build */}
         <Modal title="Add Income" open={isIncomeModalVisible} onCancel={() => setIsIncomeModalVisible(false)} footer={null}>
           <Form form={incomeForm} layout="vertical" onFinish={(v) => handleModalSubmit(v, 'income')}>
             <Form.Item name="name" label="Title" rules={[{ required: true }]}><Input /></Form.Item>

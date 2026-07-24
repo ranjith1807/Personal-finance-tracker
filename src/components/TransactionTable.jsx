@@ -1,14 +1,18 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Table, Select, Input, Radio, Button } from 'antd';
 import { UploadOutlined, DownloadOutlined } from '@ant-design/icons';
 import Papa from 'papaparse';
+import { toast } from 'react-toastify';
 
 const { Option } = Select;
 
-function TransactionTable({ transactions, addTransaction }) {
+function TransactionTable({ transactions, addTransaction, fetchTransactions }) {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [sortKey, setSortKey] = useState('');
+  
+  // FIX: Added a ref to cleanly trigger the hidden file input
+  const fileInputRef = useRef(null);
 
   const columns = [
     { title: 'Name', dataIndex: 'name', key: 'name' },
@@ -29,10 +33,14 @@ function TransactionTable({ transactions, addTransaction }) {
   if (sortKey === 'date') {
     filteredTransactions.sort((a, b) => new Date(a.date) - new Date(b.date));
   } else if (sortKey === 'amount') {
-    filteredTransactions.sort((a, b) => a.amount - b.amount);
+    filteredTransactions.sort((a, b) => Number(a.amount) - Number(b.amount));
   }
 
   const exportCSV = () => {
+    if (transactions.length === 0) {
+      toast.error("No transactions to export");
+      return;
+    }
     const csv = Papa.unparse({
       fields: ["name", "amount", "tag", "type", "date"],
       data: transactions.map(t => [t.name, t.amount, t.tag, t.type, t.date]),
@@ -49,27 +57,43 @@ function TransactionTable({ transactions, addTransaction }) {
 
   const importCSV = (event) => {
     const file = event.target.files[0];
-    if (file) {
-      Papa.parse(file, {
-        header: true,
-        dynamicTyping: true,
-        complete: async function (results) {
-          for (const row of results.data) {
+    if (!file) return;
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true, // FIX: Prevents trailing empty rows from breaking the code
+      dynamicTyping: true,
+      complete: async function (results) {
+        try {
+          // FIX: Use Promise.all to handle bulk uploads efficiently instead of a slow loop
+          const uploadPromises = results.data.map(row => {
             if (row.name && row.amount && row.type && row.date) {
-              await addTransaction({
+              return addTransaction({
                 name: row.name,
                 amount: parseFloat(row.amount),
                 tag: row.tag || 'Other',
-                type: row.type.toLowerCase(),
+                type: String(row.type).toLowerCase(),
                 date: row.date
-              }, true);
+              }, true); // 'true' flags this as a bulk operation to prevent toast spam
             }
-          }
-          // Reset file input target value so the same file can be uploaded consecutively if needed
-          event.target.value = null;
+            return Promise.resolve();
+          });
+
+          await Promise.all(uploadPromises);
+          
+          toast.success("CSV Imported Successfully!");
+          fetchTransactions(); // Refresh the table
+        } catch (error) {
+          toast.error("Failed to import some rows.");
+          console.error("Import error:", error);
+        } finally {
+          event.target.value = null; // Reset the input so the same file can be selected again
         }
-      });
-    }
+      },
+      error: (error) => {
+        toast.error(`Error reading file: ${error.message}`);
+      }
+    });
   };
 
   return (
@@ -98,18 +122,17 @@ function TransactionTable({ transactions, addTransaction }) {
             Export CSV
           </Button>
           
-          {/* Replaced standard HTML label styling with an Ant Design Button container */}
-          <Button icon={<UploadOutlined />}>
-            <label style={{ cursor: 'pointer', margin: 0, display: 'inline-block' }}>
-              Import CSV
-              <input 
-                type="file" 
-                accept=".csv" 
-                onChange={importCSV} 
-                style={{ display: 'none' }} 
-              />
-            </label>
+          {/* FIX: Trigger input via ref rather than wrapping the label directly */}
+          <Button icon={<UploadOutlined />} onClick={() => fileInputRef.current.click()}>
+            Import CSV
           </Button>
+          <input 
+            type="file" 
+            accept=".csv" 
+            ref={fileInputRef}
+            onChange={importCSV} 
+            style={{ display: 'none' }} 
+          />
         </div>
       </div>
       <Table dataSource={filteredTransactions} columns={columns} rowKey={(record, idx) => idx} />

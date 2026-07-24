@@ -1,74 +1,55 @@
 import { useState } from 'react';
 import { Form, Input, Button, Divider } from 'antd';
-import { GoogleOutlined } from '@ant-design/icons';
 import { 
   auth, 
-  db,
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
+  googleProvider, 
   signInWithPopup, 
-  googleProvider,
-  doc,
-  setDoc,
-  getDoc
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword,
+  db, 
+  doc, 
+  setDoc 
 } from '../firebase';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 
 function Signup() {
   const [isLogin, setIsLogin] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const createUserDocument = async (user) => {
-    if (!user) return;
-    const userRef = doc(db, "users", user.uid);
-    const userData = await getDoc(userRef);
-
-    if (!userData.exists()) {
-      try {
-        await setDoc(userRef, {
-          name: user.displayName || "",
-          email: user.email,
-          createdAt: new Date()
-        });
-      } catch (e) {
-        toast.error("Failed to create user record");
-      }
-    }
-  };
-
-  const onFinishSubmit = async (values) => {
-    setLoading(true);
-    if (!isLogin) {
-      if (values.password !== values.confirmPassword) {
-        toast.error("Passwords do not match!");
-        setLoading(false);
-        return;
-      }
-      try {
-        const result = await createUserWithEmailAndPassword(auth, values.email, values.password);
-        result.user.displayName = values.name;
-        await createUserDocument(result.user);
-        toast.success("Account created successfully!");
-      } catch (error) {
-        toast.error(error.message);
-      }
-    } else {
-      try {
+  const handleEmailAuth = async (values) => {
+    try {
+      if (isLogin) {
         await signInWithEmailAndPassword(auth, values.email, values.password);
-        toast.success("Login successful!");
-      } catch (error) {
-        toast.error(error.message);
+        toast.success("Logged in successfully!");
+      } else {
+        const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+        const user = userCredential.user;
+        await setDoc(doc(db, "users", user.uid), {
+          name: values.name || "User",
+          email: user.email,
+          createdAt: new Date(),
+        });
+        toast.success("Account created successfully!");
       }
+      navigate('/dashboard');
+    } catch (error) {
+      toast.error(error.message);
     }
-    setLoading(false);
   };
 
-  const handleGoogleAuth = async () => {
+  const handleGoogleSignIn = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      await createUserDocument(result.user);
-      toast.success("Authenticated via Google successfully!");
+      const user = result.user;
+      await setDoc(doc(db, "users", user.uid), {
+        name: user.displayName,
+        email: user.email,
+        createdAt: new Date(),
+      });
+      toast.success("Authenticated with Google successfully!");
+      navigate('/dashboard');
     } catch (error) {
       toast.error(error.message);
     }
@@ -79,36 +60,32 @@ function Signup() {
       <Header />
       <div className="auth-wrapper">
         <div className="auth-card">
-          <h2>{isLogin ? "Login to Financly." : "Sign Up on Financly."}</h2>
-          <Form layout="vertical" onFinish={onFinishSubmit}>
+          <h2>{isLogin ? "Log In" : "Sign Up"} to Financly</h2>
+          <Form layout="vertical" onFinish={handleEmailAuth}>
             {!isLogin && (
-              <Form.Item name="name" label="Full Name" rules={[{ required: true, message: 'Please input your name!' }]}>
+              <Form.Item name="name" label="Full Name" rules={[{ required: true }]}>
                 <Input placeholder="John Doe" />
               </Form.Item>
             )}
-            <Form.Item name="email" label="Email Address" rules={[{ required: true, type: 'email', message: 'Please input valid email!' }]}>
-              <Input placeholder="johndoe@gmail.com" />
+            <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}>
+              <Input placeholder="john@example.com" />
             </Form.Item>
-            <Form.Item name="password" label="Password" rules={[{ required: true, message: 'Please input password!' }]}>
-              <Input.Password placeholder="Example123" />
+            <Form.Item name="password" label="Password" rules={[{ required: true, min: 6 }]}>
+              <Input.Password placeholder="Min 6 characters" />
             </Form.Item>
-            {!isLogin && (
-              <Form.Item name="confirmPassword" label="Confirm Password" rules={[{ required: true, message: 'Please confirm password!' }]}>
-                <Input.Password placeholder="Example123" />
-              </Form.Item>
-            )}
-            <Form.Item>
-              <Button type="primary" htmlType="submit" block loading={loading}>
-                {isLogin ? "Login using Email and Password" : "Signup using Email and Password"}
-              </Button>
-            </Form.Item>
+            <Button type="primary" htmlType="submit" block>
+              {isLogin ? "Log In" : "Sign Up with Email"}
+            </Button>
           </Form>
-          <Divider>or</Divider>
-          <Button icon={<GoogleOutlined />} block onClick={handleGoogleAuth} style={{ marginBottom: '1rem' }}>
-            {isLogin ? "Login using Google" : "Signup using Google"}
+          
+          <Divider>OR</Divider>
+          
+          <Button block onClick={handleGoogleSignIn} style={{ marginBottom: '1rem' }}>
+            Continue with Google
           </Button>
-          <p style={{ textAlign: 'center', margin: 0, cursor: 'pointer', color: '#1890ff' }} onClick={() => setIsLogin(!isLogin)}>
-            {isLogin ? "Don't Have An Account? Click Here To Sign Up" : "Have An Account Already? Click Here To Login"}
+          
+          <p style={{ textAlign: 'center', cursor: 'pointer', color: '#1890ff' }} onClick={() => setIsLogin(!isLogin)}>
+            {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Log In"}
           </p>
         </div>
       </div>

@@ -1,17 +1,15 @@
 import { Line, Pie } from '@ant-design/charts';
 
 function Charts({ sortedTransactions }) {
-  // Fix: Use .reduce() to calculate the running balance purely without mutating external variables
   const lineData = sortedTransactions.reduce((acc, item) => {
-    // Get the balance from the previous transaction, default to 0 if it's the first item
     const previousBalance = acc.length > 0 ? acc[acc.length - 1].balance : 0;
     
-    // Calculate the new balance
+    const numericAmount = Number(item.amount); // Ensures it's treated as math, not string
+    
     const currentBalance = item.type === 'income' 
-      ? previousBalance + item.amount 
-      : previousBalance - item.amount;
+      ? previousBalance + numericAmount 
+      : previousBalance - numericAmount;
 
-    // Push the new data point to our accumulator array
     acc.push({ date: item.date, balance: currentBalance });
     return acc;
   }, []);
@@ -28,8 +26,8 @@ function Charts({ sortedTransactions }) {
     .filter(item => item.type === 'expense')
     .reduce((acc, curr) => {
       const found = acc.find(item => item.tag === curr.tag);
-      if (found) found.value += curr.amount;
-      else acc.push({ tag: curr.tag, value: curr.amount });
+      if (found) found.value += Number(curr.amount);
+      else acc.push({ tag: curr.tag, value: Number(curr.amount) });
       return acc;
     }, []);
 
@@ -49,6 +47,7 @@ function Charts({ sortedTransactions }) {
     },
     interactions: [{ type: 'element-active' }],
   };
+
   return (
     <div className="charts-wrapper">
       <div className="chart-block">
