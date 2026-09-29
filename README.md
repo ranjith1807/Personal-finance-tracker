@@ -1,110 +1,79 @@
-Personal Finance Tracker
+# Financly
 
-A clean, responsive web application to track daily expenses, monitor income, and visualize financial habits.
+> A responsive, full-stack personal finance tracker built to help you monitor your balance, visualize spending habits, and manage your budget effortlessly.
 
-📝 Description
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![Firebase](https://img.shields.io/badge/firebase-ffca28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![Ant Design](https://img.shields.io/badge/-AntDesign-%230170FE?style=for-the-badge&logo=ant-design&logoColor=white)](https://ant.design/)
 
-Managing personal finances shouldn't be complicated. This Personal Finance Tracker is designed to provide a frictionless experience for logging incomes and expenses. Built with a focus on usability and data visualization, it allows users to authenticate securely via Google, quickly add transactions, and view their financial health at a glance through intuitive charts and data tables.
+## 📝 Description
 
-✨ Features
+Financly is a secure, user-friendly web application for personal wealth management[cite: 4, 6]. It allows users to quickly log incomes and expenses, categorizing them for better financial insight[cite: 3]. Featuring an interactive dashboard with real-time charts and a robust data table, users can easily track where their money is going, filter past transactions, and manage their data via CSV bulk imports and exports[cite: 3, 5, 7].
 
-Secure Google Authentication: Seamless sign-in experience powered by Firebase Auth.
+## ✨ Features
 
-Interactive Dashboard: A comprehensive view of total income, total expenses, and current balance.
+*   **Authentication:** Secure login and registration using Email/Password or Google OAuth via Firebase[cite: 4, 10].
+*   **Financial Dashboard:** Instantly view your total income, total expenses, and current balance calculated in real-time[cite: 3].
+*   **Interactive Analytics:** Visual insights powered by dynamic line charts (tracking historical balance) and pie charts (breaking down expenses by category)[cite: 5].
+*   **Robust Transaction Management:** Search, filter (by income/expense), and sort (by date/amount) your complete transaction history[cite: 7].
+*   **Data Portability:** Easily export your transaction data to a CSV file, or bulk import hundreds of records at once using the built-in CSV uploader[cite: 7].
+*   **Responsive UI:** A clean, grid-based layout that adapts seamlessly to desktop and mobile screens[cite: 8].
 
-Transaction Management: Easily add, edit, and delete transactions. Categorize entries by type (Income/Expense), date, and custom tags.
+## 🏗️ Tech Stack
 
-Data Visualization: Graphical representations of spending habits to help identify where money is going.
+*   **Frontend Framework:** React (with React Router)[cite: 9]
+*   **UI & Data Visualization:** Ant Design & Ant Design Charts[cite: 3, 5, 7]
+*   **Backend & Database:** Firebase Authentication & Cloud Firestore
+*   **Utilities:** Papaparse (CSV handling)[cite: 7], React Toastify (Notifications)[cite: 9]
 
-Responsive UI: A polished, mobile-friendly interface built with Ant Design components.
+## 🚀 Getting Started
 
-Real-time Database: Data is instantly synced and securely stored in Firebase Cloud Firestore.
+### Prerequisites
 
-🏗️ Architecture & Tech Stack
+*   Node.js (v16 or higher)
+*   npm or yarn
+*   A Firebase project configured for Web with Authentication and Firestore enabled.
 
-Frontend Framework: React.js
+### Installation
 
-UI Component Library: Ant Design (antd)
-
-Backend / BaaS: Firebase
-
-Authentication: Firebase Authentication (Google OAuth)
-
-Database: Cloud Firestore (NoSQL)
-
-Hosting: Vercel / Firebase Hosting (Recommended)
-
-🚀 Getting Started
-
-Prerequisites
-
-Node.js (v14 or higher)
-
-npm or yarn
-
-A Firebase Project
-
-Installation
-
-Clone the repository:
-
-git clone https://github.com/ranjith1807/Personal-finance-tracker.git
-cd Personal-finance-tracker
-
-
+1. **Clone the repository:**
+   ```bash
+   git clone <your-repository-url>
+   cd financly
 Install dependencies:
 
+Bash
 npm install
-# or
-yarn install
+Configure Firebase:
+Open src/firebase.jsx (or your environment variables file) and replace the configuration object with your own Firebase project credentials[cite: 10]:
 
-
-Configure Firebase Environment Variables:
-Create a .env file in the root directory and add your Firebase config keys:
-
-REACT_APP_FIREBASE_API_KEY=your_api_key
-REACT_APP_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
-REACT_APP_FIREBASE_PROJECT_ID=your_project_id
-REACT_APP_FIREBASE_STORAGE_BUCKET=your_project_id.appspot.com
-REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-REACT_APP_FIREBASE_APP_ID=your_app_id
-
-
+JavaScript
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
 Start the development server:
 
+Bash
 npm start
-# or
-yarn start
-
-
-The application will be available at http://localhost:3000.
-
-📂 Project Structure
-
-src/
-├── components/       # Reusable Ant Design UI components (Layout, Modals, Forms)
-├── pages/            # Page-level components (Dashboard, Login, Transactions)
-├── utils/            # Helper functions and formatter logic
-├── firebase.js       # Firebase initialization and configuration
-├── App.js            # Main application router and context provider
-└── index.js          # React entry point
-
+The application will be available in your browser.
 
 🤝 Contributing
-
 Contributions, issues, and feature requests are welcome!
-Feel free to check issues page.
 
 Fork the project.
 
-Create your feature branch: git checkout -b feature/MyFeature
+Create your feature branch: git checkout -b feature/NewFeature
 
-Commit your changes: git commit -m 'Add some feature'
+Commit your changes: git commit -m 'Add NewFeature'
 
-Push to the branch: git push origin feature/MyFeature
+Push to the branch: git push origin feature/NewFeature
 
 Open a pull request.
 
 📄 License
-
 This project is open-source and available under the MIT License.
